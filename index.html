@@ -3,140 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C/2025 N1 (3I/ATLAS) Interstellar Comet - Live Tracker</title>
+    <title>3I/ATLAS (C/2025 N1) Interstellar Comet Live Tracker</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Full-Screen Canvas -->
-        <canvas id="solar-system" width="1920" height="1080"></canvas>
-        
-        <!-- Minimal UI Overlays -->
-        <div class="ui-overlay">
-            <!-- Top Left - Basic Info -->
-            <div class="info-panel">
-                <h1>3I/ATLAS (C/2025 N1)</h1>
-                <p class="subtitle">Interstellar Comet Live Tracker</p>
-                <div class="current-time" id="current-time">Loading...</div>
-                <div class="distance-info">
-                    <div class="distance-item">
-                        <span class="label">Distance from Earth:</span>
-                        <span class="value" id="distance-earth">Loading...</span>
-                    </div>
-                    <div class="distance-item">
-                        <span class="label">Distance from Sun:</span>
-                        <span class="value" id="distance-sun">Loading...</span>
-                    </div>
-                    <div class="distance-item">
-                        <span class="label">Relative Velocity:</span>
-                        <span class="value" id="relative-velocity">Loading...</span>
-                    </div>
-                    <div class="distance-item">
-                        <span class="label">Apparent Magnitude:</span>
-                        <span class="value" id="apparent-magnitude">Loading...</span>
-                    </div>
-                    <div class="distance-item">
-                        <span class="label">RA/Dec:</span>
-                        <span class="value" id="ra-dec">Loading...</span>
-                    </div>
-                    <div class="distance-item">
-                        <span class="label">Constellation:</span>
-                        <span class="value" id="constellation">Loading...</span>
-                    </div>
-                </div>
-                
-                <div class="countdown-section">
-                    <h3>Countdown to Earth Pass</h3>
-                    <div class="countdown-timer" id="countdown-timer">Loading...</div>
-                    <div class="event-dates">
-                        <div class="event-date">
-                            <span class="date-label">Perihelion:</span>
-                            <span class="date-value">Oct 29, 2025</span>
-                        </div>
-                        <div class="event-date">
-                            <span class="date-label">Closest to Earth:</span>
-                            <span class="date-value">Dec 19, 2025</span>
-                        </div>
-                    </div>
-                </div>
+    <canvas id="solar-system-canvas"></canvas>
+    <div class="ui-overlay">
+        <div class="info-panel">
+            <h1>3I/ATLAS (C/2025 N1)</h1>
+            <p class="subtitle">Interstellar Comet Live Tracker</p>
+            <div class="time-display" id="current-time">--:--:-- --</div>
+            <div class="time-controls">
+                <button class="time-btn active" data-speed="86400">1 Day/s</button>
+                <button class="time-btn" data-speed="2592000">30 Day/s</button>
+                <button class="time-btn" data-speed="31536000">1 Year/s</button>
+                <button class="time-btn" data-speed="1">Real Time</button>
             </div>
-            
-            <!-- Top Right - Controls -->
-            <div class="controls-panel">
-                <div class="time-controls">
-                    <button class="time-btn active" data-speed="1">Real-Time</button>
-                    <button class="time-btn" data-speed="86400">1d/s</button>
-                    <button class="time-btn" data-speed="2592000">30d/s</button>
-                    <button class="time-btn" data-speed="31536000">1y/s</button>
-                </div>
-                
-                <!-- JPL Live Data Toggle -->
-                <div class="jpl-toggle">
-                    <button class="jpl-btn" id="enable-jpl">🔄 Enable Live JPL Data</button>
-                    <div class="jpl-info">
-                        <small>Note: JPL API may be blocked by browser security. Enhanced local data will be used instead.</small>
-                    </div>
-                </div>
-                
-                <div class="view-controls">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="show-trajectory" checked>
-                        <span>Trajectory</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="show-constellations" checked>
-                        <span>Constellations</span>
-                    </label>
-                </div>
-                
-                <!-- Live Data Status -->
-                <div class="live-data-status">
-                    <div class="status-indicator" id="data-status">
-                        <span class="status-dot"></span>
-                        <span class="status-text">Static Data</span>
-                    </div>
-                    <div class="update-info" id="update-info">
-                        Last update: Never
-                    </div>
-                </div>
-                
-                <div class="camera-controls">
-                    <button class="camera-btn" id="zoom-in">🔍+</button>
-                    <button class="camera-btn" id="zoom-out">🔍-</button>
-                    <button class="camera-btn" id="reset-view">🔄</button>
-                    <button class="camera-btn" id="focus-comet">🎯</button>
-                </div>
+            <div class="data-grid">
+                <span class="label">Distance from Earth:</span><span class="value" id="distance-earth">--</span>
+                <span class="label">Distance from Sun:</span><span class="value" id="distance-sun">--</span>
+                <span class="label">Relative Velocity:</span><span class="value" id="relative-velocity">--</span>
+                <span class="label">Apparent Magnitude:</span><span class="value" id="apparent-magnitude">--</span>
+                <span class="label">RA/Dec:</span><span class="value" id="ra-dec">--</span>
+                <span class="label">Constellation:</span><span class="value" id="constellation">--</span>
+                <span class="label">Data Source:</span>
+                <span class="value" id="data-source">
+                    <span class="status-dot"></span>
+                    <span id="data-source-text">Static</span>
+                </span>
             </div>
-            
-            <!-- Bottom - Legend & Info -->
-            <div class="bottom-panel">
-                <div class="legend">
-                    <div class="legend-item">
-                        <span class="legend-color sun"></span>
-                        <span>Sun</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color earth"></span>
-                        <span>Earth</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color comet"></span>
-                        <span>3I/ATLAS</span>
-                    </div>
-                </div>
-                
-                <div class="zoom-display">
-                    <span id="zoom-level">Zoom: 100%</span>
-                </div>
-                
-                <div class="comet-info">
-                    <p>The comet's hyperbolic trajectory means it's a one-time visitor to our solar system.</p>
+            <div class="countdown-panel">
+                <h3>Countdown to Earth Pass</h3>
+                <div class="countdown-timer" id="countdown-timer">--</div>
+                <div class="event-dates">
+                    <span>Perihelion: Oct 29, 2025</span>
+                    <span>Closest to Earth: Dec 19, 2025</span>
                 </div>
             </div>
         </div>
+        <div class="bottom-legend">
+             <div class="legend-item"><span class="legend-dot sun"></span>Sun</div>
+             <div class="legend-item"><span class="legend-dot mercury"></span>Mercury</div>
+             <div class="legend-item"><span class="legend-dot venus"></span>Venus</div>
+             <div class="legend-item"><span class="legend-dot earth"></span>Earth</div>
+             <div class="legend-item"><span class="legend-dot mars"></span>Mars</div>
+             <div class="legend-item"><span class="legend-dot jupiter"></span>Jupiter</div>
+             <div class="legend-item"><span class="legend-dot saturn"></span>Saturn</div>
+             <div class="legend-item"><span class="legend-dot uranus"></span>Uranus</div>
+             <div class="legend-item"><span class="legend-dot neptune"></span>Neptune</div>
+             <div class="legend-item"><span class="legend-dot comet"></span>3I/ATLAS</div>
+        </div>
     </div>
-
-    <script src="script.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
