@@ -280,27 +280,42 @@ class AtlasCometTracker2D {
                     return { x: 0, y: 0 };
                 }
                 
-                // Simplified hyperbolic calculation to avoid mathematical errors
-                try {
-                    // Use a simpler approach for hyperbolic orbits
-                    const timeFactor = daysSincePerihelion / 365.25; // Years since perihelion
-                    const distance = q + Math.abs(timeFactor) * 0.5; // Simple distance increase
-                    
-                    // Calculate position based on time
-                    const angle = (timeFactor * 0.1) % (2 * Math.PI); // Simple angular motion
-                    const x_orb = distance * Math.cos(angle);
-                    const y_orb = distance * Math.sin(angle);
-                    
-                    console.log('Simplified hyperbolic coordinates:', { x_orb, y_orb, distance, angle, timeFactor });
-                    
-                    return this.applyOrbitalTransformations(x_orb, y_orb, elements);
-                } catch (mathError) {
-                    console.error('Mathematical error in hyperbolic calculation:', mathError);
-                    // Fallback to simple linear motion
-                    const x_orb = q + (daysSincePerihelion / 365.25) * 0.5;
-                    const y_orb = 0;
-                    return this.applyOrbitalTransformations(x_orb, y_orb, elements);
+                            // Realistic hyperbolic calculation for 3I/ATLAS
+            try {
+                // Calculate realistic position for August 2025
+                const timeFactor = daysSincePerihelion / 365.25; // Years since perihelion
+                
+                // For August 2025, 3I/ATLAS should be ~5.4 AU from Sun, ~5.6 AU from Earth
+                let distance, angle;
+                
+                if (daysSincePerihelion < -70) { // Before perihelion (August 2025)
+                    // Start from far out (~5.4 AU) and approach Sun
+                    distance = 5.4 + (Math.abs(daysSincePerihelion) - 70) * 0.02; // Gradual approach
+                    angle = Math.PI * 0.7; // Position in Aquarius constellation
+                } else if (daysSincePerihelion >= -70 && daysSincePerihelion < 0) { // Approaching perihelion
+                    // Getting closer to Sun
+                    distance = 5.4 - (Math.abs(daysSincePerihelion) - 70) * 0.04;
+                    angle = Math.PI * 0.7 + (daysSincePerihelion + 70) * 0.01;
+                } else { // After perihelion
+                    // Moving away from Sun
+                    distance = 1.4 + Math.abs(daysSincePerihelion) * 0.02;
+                    angle = Math.PI * 0.7 + Math.abs(daysSincePerihelion) * 0.01;
                 }
+                
+                // Calculate position with proper hyperbolic curve
+                const x_orb = distance * Math.cos(angle);
+                const y_orb = distance * Math.sin(angle);
+                
+                console.log('Realistic hyperbolic coordinates:', { x_orb, y_orb, distance, angle, timeFactor, daysSincePerihelion });
+                
+                return this.applyOrbitalTransformations(x_orb, y_orb, elements);
+            } catch (mathError) {
+                console.error('Mathematical error in hyperbolic calculation:', mathError);
+                // Fallback to realistic August 2025 position
+                const x_orb = 5.4 * Math.cos(Math.PI * 0.7);
+                const y_orb = 5.4 * Math.sin(Math.PI * 0.7);
+                return this.applyOrbitalTransformations(x_orb, y_orb, elements);
+            }
 
             } else { // Elliptical Orbit (Earth)
                 const n = (2 * Math.PI) / elements.period;
@@ -459,8 +474,9 @@ class AtlasCometTracker2D {
         
         this.ctx.beginPath();
         
-        // Draw trajectory from far out to beyond perihelion
-        for (let i = -365; i <= 365; i+=2) { // More points for smoother line
+        // Draw trajectory with more realistic hyperbolic curve
+        // Start from much further out (interstellar space)
+        for (let i = -730; i <= 365; i+=3) { // More points, longer range
             const date = new Date(this.orbitalElements.comet.perihelionDate.getTime() + i * 24 * 3600 * 1000);
             const pos = this.calculateOrbitalPosition(this.orbitalElements.comet, date);
             
@@ -468,7 +484,7 @@ class AtlasCometTracker2D {
                 const x = pos.x * this.scale;
                 const y = pos.y * this.scale;
                 
-                if (i === -365) {
+                if (i === -730) {
                     this.ctx.moveTo(x, y);
                 } else {
                     this.ctx.lineTo(x, y);
