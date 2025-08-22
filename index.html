@@ -3,58 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3I/ATLAS (C/2025 N1) Interstellar Comet Live Tracker</title>
+    <title>3D - 3I/ATLAS Interstellar Comet Live Tracker</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
 </head>
 <body>
-    <canvas id="solar-system-canvas"></canvas>
+    <div id="scene-container"></div>
     <div class="ui-overlay">
         <div class="info-panel">
             <h1>3I/ATLAS (C/2025 N1)</h1>
-            <p class="subtitle">Interstellar Comet Live Tracker</p>
+            <p class="subtitle">Interstellar Comet 3D Tracker</p>
             <div class="time-display" id="current-time">--:--:-- --</div>
-            <div class="time-controls">
-                <button class="time-btn active" data-speed="86400">1 Day/s</button>
-                <button class="time-btn" data-speed="2592000">30 Day/s</button>
-                <button class="time-btn" data-speed="31536000">1 Year/s</button>
-                <button class="time-btn" data-speed="1">Real Time</button>
-            </div>
             <div class="data-grid">
                 <span class="label">Distance from Earth:</span><span class="value" id="distance-earth">--</span>
                 <span class="label">Distance from Sun:</span><span class="value" id="distance-sun">--</span>
-                <span class="label">Relative Velocity:</span><span class="value" id="relative-velocity">--</span>
-                <span class="label">Apparent Magnitude:</span><span class="value" id="apparent-magnitude">--</span>
-                <span class="label">RA/Dec:</span><span class="value" id="ra-dec">--</span>
-                <span class="label">Constellation:</span><span class="value" id="constellation">--</span>
-                <span class="label">Data Source:</span>
-                <span class="value" id="data-source">
-                    <span class="status-dot"></span>
-                    <span id="data-source-text">Static</span>
-                </span>
             </div>
             <div class="countdown-panel">
                 <h3>Countdown to Earth Pass</h3>
                 <div class="countdown-timer" id="countdown-timer">--</div>
-                <div class="event-dates">
-                    <span>Perihelion: Oct 29, 2025</span>
-                    <span>Closest to Earth: Dec 19, 2025</span>
-                </div>
             </div>
         </div>
-        <div class="bottom-legend">
-             <div class="legend-item"><span class="legend-dot sun"></span>Sun</div>
-             <div class="legend-item"><span class="legend-dot mercury"></span>Mercury</div>
-             <div class="legend-item"><span class="legend-dot venus"></span>Venus</div>
-             <div class="legend-item"><span class="legend-dot earth"></span>Earth</div>
-             <div class="legend-item"><span class="legend-dot mars"></span>Mars</div>
-             <div class="legend-item"><span class="legend-dot jupiter"></span>Jupiter</div>
-             <div class="legend-item"><span class="legend-dot saturn"></span>Saturn</div>
-             <div class="legend-item"><span class="legend-dot uranus"></span>Uranus</div>
-             <div class="legend-item"><span class="legend-dot neptune"></span>Neptune</div>
-             <div class="legend-item"><span class="legend-dot comet"></span>3I/ATLAS</div>
-        </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module" src="main.js"></script>
 </body>
 </html>

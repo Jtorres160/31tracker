@@ -9,9 +9,8 @@ body {
     background-color: #000; color: var(--text-primary);
     overflow: hidden;
 }
-#solar-system-canvas {
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
+#scene-container {
+position: fixed; top: 0; left: 0; width: 100%; height: 100%;
 }
 .ui-overlay {
     position: fixed; top: 0; left: 0;
@@ -21,94 +20,12 @@ body {
 .info-panel {
     background-color: var(--bg-panel); backdrop-filter: blur(10px);
     border: 1px solid var(--border-color); border-radius: 0.75rem;
-    padding: 1.5rem; width: 320px;
+    padding: 1.5rem; width: 320px; pointer-events: auto;
 }
-h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
-.subtitle { color: var(--text-secondary); margin-bottom: 1rem; }
-.time-display {
-    background-color: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-    font-family: 'Fira Code', monospace; text-align: center;
-    padding: 0.5rem; border-radius: 0.25rem; margin-bottom: 1rem;
-}
-.data-grid {
-    display: grid; grid-template-columns: auto 1fr;
-    gap: 0.5rem 1rem; font-size: 0.9rem;
-}
-.data-grid .label { color: var(--text-secondary); }
-.data-grid .value { font-weight: 600; font-family: 'Fira Code', monospace; }
-.countdown-panel {
-    border-top: 1px solid var(--border-color); margin-top: 1rem; padding-top: 1rem;
-}
-.countdown-panel h3 { font-size: 1rem; color: var(--accent-blue); margin-bottom: 0.5rem; }
-.countdown-timer {
-    background-color: rgba(245, 159, 11, 0.1); color: var(--accent-yellow);
-    font-size: 1.25rem; font-weight: 700; text-align: center;
-    padding: 0.75rem; border-radius: 0.25rem; margin-bottom: 0.5rem;
-}
-.event-dates { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); }
-.bottom-legend {
-    position: absolute; bottom: 1.5rem; left: 50%;
-    transform: translateX(-50%); display: flex; gap: 1rem;
-    background-color: var(--bg-panel); backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color); border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-}
-.legend-item { display: flex; align-items: center; gap: 0.5rem; }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-.sun { background-color: var(--accent-yellow); }
-.mercury { background-color: #a9a9a9; }
-.venus { background-color: #ffa500; }
-.earth { background-color: var(--accent-blue); }
-.mars { background-color: #ef4444; }
-.jupiter { background-color: #f59e0b; }
-.saturn { background-color: #fbbf24; }
-.uranus { background-color: #22c55e; }
-.neptune { background-color: #3b82f6; }
-.comet { background-color: var(--accent-green); }
-
-/* Time Controls */
-.time-controls {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
+h1, .subtitle, .time-display, .data-grid, .countdown-panel {
     margin-bottom: 1rem;
 }
-.time-btn {
-    flex-grow: 1;
-    background-color: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.time-btn:hover {
-    background-color: var(--border-color);
-    color: var(--text-primary);
-}
-.time-btn.active {
-    background-color: var(--accent-blue);
-    border-color: var(--accent-blue);
-    color: white;
-    font-weight: 600;
-}
-
-/* Data Source Status */
-#data-source {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--text-secondary);
-}
-.status-dot.live {
-    background-color: var(--accent-green);
-}
-.status-dot.error {
-    background-color: #ef4444; /* Red for error */
-}
+.data-grid { display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; }
+.data-grid .label { color: var(--text-secondary); }
+.data-grid .value { font-weight: 600; font-family: 'Fira-Code', monospace; }
+.countdown-timer { font-size: 1.25rem; font-weight: 700; color: var(--accent-yellow); }

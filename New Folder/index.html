@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D - 3I/ATLAS Interstellar Comet Live Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --text-primary: #e2e8f0; --text-secondary: #94a3b8;
+            --bg-dark: #0f172a; --bg-panel: rgba(15, 23, 42, 0.85);
+            --accent-green: #10b981; --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b; --border-color: rgba(51, 65, 85, 0.5);
+        }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #000; color: var(--text-primary); overflow: hidden; }
+        #scene-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+        .ui-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; padding: 1.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; }
+        .info-panel { background-color: var(--bg-panel); backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem; width: 320px; pointer-events: auto; align-self: flex-start; }
+        h1 { font-size: 1.75rem; margin: 0 0 0.25rem 0; }
+        .subtitle { color: var(--text-secondary); margin: 0 0 1rem 0; }
+        .time-display { background-color: rgba(16, 185, 129, 0.1); color: var(--accent-green); font-family: 'Fira Code', monospace; text-align: center; padding: 0.5rem; border-radius: 0.25rem; margin-bottom: 1rem; }
+        .data-grid { display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; font-size: 0.9rem; margin-bottom: 1rem; }
+        .data-grid .label { color: var(--text-secondary); }
+        .data-grid .value { font-weight: 600; font-family: 'Fira Code', monospace; text-align: right; }
+        .countdown-panel { border-top: 1px solid var(--border-color); margin-top: 1rem; padding-top: 1rem; }
+        .countdown-panel h3 { font-size: 1rem; color: var(--accent-blue); margin: 0 0 0.5rem 0; }
+        .countdown-timer { background-color: rgba(245, 159, 11, 0.1); color: var(--accent-yellow); font-size: 1.25rem; font-weight: 700; text-align: center; padding: 0.75rem; border-radius: 0.25rem; }
+        .controls-panel { pointer-events: auto; align-self: flex-start; background-color: var(--bg-panel); backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.5rem; }
+        .time-controls { display: flex; }
+        .time-btn { background-color: transparent; border: 1px solid transparent; color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
+        .time-btn:hover { color: var(--text-primary); background-color: var(--border-color); }
+        .time-btn.active { color: white; background-color: var(--accent-green); }
+    </style>
+</head>
+<body>
+    <div id="scene-container"></div>
+    <div class="ui-overlay">
+        <div class="info-panel">
+            <h1>3I/ATLAS (C/2025 N1)</h1>
+            <p class="subtitle">Interstellar Comet 3D Tracker</p>
+            <div class="time-display" id="current-time">--:--:-- --</div>
+            <div class="data-grid">
+                <span class="label">Distance from Earth:</span><span class="value" id="distance-earth">--</span>
+                <span class="label">Distance from Sun:</span><span class="value" id="distance-sun">--</span>
+                <span class="label">Velocity:</span><span class="value" id="relative-velocity">--</span>
+                <span class="label">Magnitude:</span><span class="value" id="apparent-magnitude">--</span>
+            </div>
+            <div class="countdown-panel">
+                <h3>Countdown to Earth Pass</h3>
+                <div class="countdown-timer" id="countdown-timer">--</div>
+            </div>
+        </div>
+        <div class="controls-panel">
+            <div class="time-controls" id="time-controls">
+                <button class="time-btn active" data-speed="1">Real-Time</button>
+                <button class="time-btn" data-speed="86400">1d/s</button>
+                <button class="time-btn" data-speed="2592000">30d/s</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        class Physics {
+            constructor() {
+                this.elements = {
+                    mercury: { a: 0.387, e: 0.206, i: 7.0, omega: 29.1, Omega: 48.3, M0: 174.8, period: 88.0 },
+                    venus: { a: 0.723, e: 0.007, i: 3.4, omega: 54.9, Omega: 76.7, M0: 50.4, period: 224.7 },
+                    earth: { a: 1.0, e: 0.017, i: 0.0, omega: 102.9, Omega: -11.3, M0: 100.5, period: 365.2 },
+                    mars: { a: 1.524, e: 0.093, i: 1.9, omega: 286.5, Omega: 49.6, M0: 19.4, period: 687.0 },
+                    jupiter: { a: 5.204, e: 0.048, i: 1.3, omega: 273.9, Omega: 100.5, M0: 20.0, period: 4332.6 },
+                    comet: {
+                        a: -1400, e: 1.001, i: 72.9, omega: 87.2, Omega: 31.6, M0: 0.0,
+                        // FIX: Corrected epoch to the discovery date (July 1, 2025) for accurate positioning
+                        epoch: 2460855.5,
+                        perihelionDate: new Date('2025-10-29'),
+                        closestToEarth: new Date('2025-12-19')
+                    }
+                };
+                for (const p in this.elements) { if (this.elements[p].period) this.elements[p].epoch = 2451545.0; }
+            }
+            dateToJulianDay(d) { return (d.getTime() / 86400000) + 2440587.5; }
+            calculateOrbitalPosition(elements, date) {
+                try {
+                    const jd = this.dateToJulianDay(date); let x_orb, y_orb;
+                    if (elements.e >= 1.0) {
+                        const k = 0.01720209895;
+                        const M = k * (jd - elements.epoch) / Math.sqrt(-Math.pow(elements.a, 3));
+                        let H = M;
+                        for (let i = 0; i < 10; i++) {
+                            const dH = (M - (elements.e * Math.sinh(H) - H)) / (elements.e * Math.cosh(H) - 1);
+                            H += dH;
+                            if (Math.abs(dH) < 1e-9) break;
+                        }
+                        const r = elements.a * (1 - elements.e * Math.cosh(H));
+                        const f = 2 * Math.atan(Math.sqrt((elements.e + 1) / (elements.e - 1)) * Math.tanh(H / 2));
+                        x_orb = r * Math.cos(f); y_orb = r * Math.sin(f);
+                    } else {
+                        const n = (2 * Math.PI) / elements.period;
+                        const M = (elements.M0 * Math.PI / 180) + n * (jd - elements.epoch);
+                        let E = M;
+                        for (let i = 0; i < 7; i++) { E = M + elements.e * Math.sin(E); }
+                        const r = elements.a * (1 - elements.e * Math.cos(E));
+                        const f = 2 * Math.atan2(Math.sqrt(1 + elements.e) * Math.sin(E / 2), Math.sqrt(1 - elements.e) * Math.cos(E / 2));
+                        x_orb = r * Math.cos(f); y_orb = r * Math.sin(f);
+                    }
+                    if (!isFinite(x_orb) || !isFinite(y_orb)) return { x: 0, y: 0, z: 0 };
+                    return this.applyOrbitalTransformations(x_orb, y_orb, elements);
+                } catch (error) { console.error("Physics Error:", error); return { x: 0, y: 0, z: 0 }; }
+            }
+            applyOrbitalTransformations(x_orb, y_orb, elements) {
+                const i_rad = elements.i * Math.PI / 180, omega_rad = elements.omega * Math.PI / 180, Omega_rad = elements.Omega * Math.PI / 180;
+                const x_prime = x_orb * Math.cos(omega_rad) - y_orb * Math.sin(omega_rad);
+                const y_prime = x_orb * Math.sin(omega_rad) + y_orb * Math.cos(omega_rad);
+                const x_ecl = x_prime, y_ecl = y_prime * Math.cos(i_rad), z_ecl = y_prime * Math.sin(i_rad);
+                const x = x_ecl * Math.cos(Omega_rad) - y_ecl * Math.sin(Omega_rad);
+                const y = x_ecl * Math.sin(Omega_rad) + y_ecl * Math.cos(Omega_rad);
+                return { x, y, z: z_ecl };
+            }
+        }
+
+        class UI {
+            constructor() {
+                this.elements = {
+                    earthDist: document.getElementById('distance-earth'), sunDist: document.getElementById('distance-sun'),
+                    velocity: document.getElementById('relative-velocity'), magnitude: document.getElementById('apparent-magnitude'),
+                    countdown: document.getElementById('countdown-timer'), clock: document.getElementById('current-time')
+                };
+            }
+            startClock() { setInterval(() => { if (this.elements.clock) this.elements.clock.textContent = new Date().toLocaleTimeString(); }, 1000); }
+            update(earthPos, cometPos, currentDate, cometElements) {
+                const AU_TO_KM = 149597870.7;
+                const sunDistAU = Math.hypot(cometPos.x, cometPos.y, cometPos.z);
+                const earthDistAU = Math.hypot(cometPos.x - earthPos.x, cometPos.y - earthPos.y, cometPos.z - earthPos.z);
+                if (this.elements.sunDist) this.elements.sunDist.textContent = `${(sunDistAU * AU_TO_KM).toLocaleString('en-US', {maximumFractionDigits: 0})} km`;
+                if (this.elements.earthDist) this.elements.earthDist.textContent = `${(earthDistAU * AU_TO_KM).toLocaleString('en-US', {maximumFractionDigits: 0})} km`;
+                const timeUntilPass = cometElements.closestToEarth.getTime() - currentDate.getTime();
+                if (this.elements.countdown) this.elements.countdown.textContent = timeUntilPass > 0 ? `${Math.floor(timeUntilPass / 86400000)} days` : 'Passed Earth!';
+                const vel = 29.8 * Math.sqrt((2 / sunDistAU) - (1 / Math.abs(cometElements.a)));
+                if (this.elements.velocity) this.elements.velocity.textContent = isFinite(vel) ? `${vel.toFixed(1)} km/s` : '--';
+                const mag = 10 + 5 * Math.log10(sunDistAU * earthDistAU);
+                if (this.elements.magnitude) this.elements.magnitude.textContent = isFinite(mag) ? mag.toFixed(1) : '--';
+            }
+        }
+
+        class SceneManager {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.container.appendChild(this.renderer.domElement);
+                this.camera.position.set(0, 8, 15); // Zoomed out a bit
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.scene.add(new THREE.PointLight(0xffffff, 2.5, 500));
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+                this.bodies = {
+                    sun: new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), new THREE.MeshBasicMaterial({ color: 0xfbbf24 })),
+                    mercury: new THREE.Mesh(new THREE.SphereGeometry(0.04, 16, 16), new THREE.MeshStandardMaterial({ color: 0x8c8c8c })),
+                    venus: new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), new THREE.MeshStandardMaterial({ color: 0xd4a06a })),
+                    earth: new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x3b82f6 })),
+                    mars: new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 16), new THREE.MeshStandardMaterial({ color: 0xb94b4b })),
+                    jupiter: new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), new THREE.MeshStandardMaterial({ color: 0xd8caaf })),
+                    comet: new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981 }))
+                };
+                for (const body in this.bodies) { this.scene.add(this.bodies[body]); }
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+            onWindowResize() { this.camera.aspect = this.container.clientWidth / this.container.clientHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(this.container.clientWidth, this.container.clientHeight); }
+            updateBodyPositions(positions) {
+                for (const name in positions) {
+                    if (this.bodies[name] && positions[name]) {
+                        this.bodies[name].position.set(positions[name].x, positions[name].y, positions[name].z);
+                    }
+                }
+            }
+            drawOrbit(points) {
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0x444444 });
+                this.scene.add(new THREE.Line(geometry, material));
+            }
+            updateTrail(points) {
+                if (this.trailLine) this.scene.remove(this.trailLine);
+                if (points.length < 2) return;
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0x10b981 });
+                this.trailLine = new THREE.Line(geometry, material);
+                this.scene.add(this.trailLine);
+            }
+            render() { this.controls.update(); this.renderer.render(this.scene, this.camera); }
+        }
+
+        class App {
+            constructor() {
+                this.physics = new Physics();
+                this.sceneManager = new SceneManager('scene-container');
+                this.ui = new UI();
+                this.simulationDate = new Date();
+                this.timeMultiplier = 1;
+                // FIX: Restore the full list of planets to be updated and rendered
+                this.planetNames = ['mercury', 'venus', 'earth', 'mars', 'jupiter'];
+                this.cometTrail = [];
+                this.TRAIL_LENGTH = 150;
+            }
+            init() {
+                this.ui.startClock();
+                this.bindTimeControls();
+                this.createOrbits();
+                this.animate();
+            }
+            createOrbits() {
+                this.planetNames.forEach(name => {
+                    const points = []; const elements = this.physics.elements[name];
+                    for (let i = 0; i <= elements.period; i += elements.period / 100) {
+                        const date = new Date(2025, 0, i);
+                        const pos = this.physics.calculateOrbitalPosition(elements, date);
+                        points.push(new THREE.Vector3(pos.x, pos.y, pos.z));
+                    }
+                    points.push(points[0]);
+                    this.sceneManager.drawOrbit(points);
+                });
+            }
+            bindTimeControls() {
+                document.getElementById('time-controls').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('time-btn')) {
+                        document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.timeMultiplier = parseInt(e.target.dataset.speed);
+                    }
+                });
+            }
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                const stepSize = this.timeMultiplier * (1000 / 60);
+                this.simulationDate = new Date(this.simulationDate.getTime() + stepSize);
+
+                const positions = {};
+                this.planetNames.forEach(name => {
+                    positions[name] = this.physics.calculateOrbitalPosition(this.physics.elements[name], this.simulationDate);
+                });
+                positions.comet = this.physics.calculateOrbitalPosition(this.physics.elements.comet, this.simulationDate);
+
+                this.cometTrail.push(new THREE.Vector3(positions.comet.x, positions.comet.y, positions.comet.z));
+                if (this.cometTrail.length > this.TRAIL_LENGTH) { this.cometTrail.shift(); }
+
+                this.sceneManager.updateBodyPositions(positions);
+                this.sceneManager.updateTrail(this.cometTrail);
+                this.sceneManager.render();
+                this.ui.update(positions.earth, positions.comet, this.simulationDate, this.physics.elements.comet);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new App();
+            app.init();
+        });
+    </script>
+</body>
+</html>
