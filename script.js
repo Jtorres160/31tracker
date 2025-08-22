@@ -8,7 +8,7 @@ const CONFIG = {
     SIZES: {
         SUN: 40, // Even larger Sun
         EARTH: 20, // Larger Earth
-        COMET: 25 // Larger comet
+        COMET: 8 // Simple dot size for comet
     },
     COLORS: {
         SUN: '#fbbf24',
@@ -372,27 +372,32 @@ class AtlasCometTracker2D {
         this.drawCelestialBody(0, 0, CONFIG.COLORS.SUN, 'Sun', CONFIG.SIZES.SUN);
         this.drawCelestialBody(earthPos.x, earthPos.y, CONFIG.COLORS.EARTH, 'Earth', CONFIG.SIZES.EARTH);
         
-        // Draw comet with much larger size and better visibility
+        // Draw comet as a simple glowing green dot
         if (cometPos && !isNaN(cometPos.x) && !isNaN(cometPos.y)) {
             console.log('Drawing comet at:', cometPos);
             
-            // Draw a very large, visible comet
-            this.drawCelestialBody(cometPos.x, cometPos.y, CONFIG.COLORS.COMET, '3I/ATLAS', CONFIG.SIZES.COMET * 3);
-            
-            // Add a large glow effect around the comet
+            // Draw a soft glow effect
             this.ctx.save();
-            this.ctx.globalAlpha = 0.4;
+            this.ctx.globalAlpha = 0.3;
             this.ctx.fillStyle = CONFIG.COLORS.COMET;
             this.ctx.beginPath();
-            this.ctx.arc(cometPos.x * this.scale, cometPos.y * this.scale, CONFIG.SIZES.COMET * 8, 0, 2 * Math.PI);
+            this.ctx.arc(cometPos.x * this.scale, cometPos.y * this.scale, 20, 0, 2 * Math.PI);
             this.ctx.fill();
             this.ctx.restore();
             
-            // Add a bright center dot
+            // Draw the main comet dot
+            this.ctx.save();
+            this.ctx.fillStyle = CONFIG.COLORS.COMET;
+            this.ctx.beginPath();
+            this.ctx.arc(cometPos.x * this.scale, cometPos.y * this.scale, 8, 0, 2 * Math.PI);
+            this.ctx.fill();
+            this.ctx.restore();
+            
+            // Add a bright white center for visibility
             this.ctx.save();
             this.ctx.fillStyle = '#ffffff';
             this.ctx.beginPath();
-            this.ctx.arc(cometPos.x * this.scale, cometPos.y * this.scale, 8, 0, 2 * Math.PI);
+            this.ctx.arc(cometPos.x * this.scale, cometPos.y * this.scale, 3, 0, 2 * Math.PI);
             this.ctx.fill();
             this.ctx.restore();
         } else {
