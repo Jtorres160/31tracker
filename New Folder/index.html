@@ -39,6 +39,9 @@
             <h1>3I/ATLAS (C/2025 N1)</h1>
             <p class="subtitle">Interstellar Comet 3D Tracker</p>
             <div class="time-display" id="current-time">--:--:-- --</div>
+            <div class="real-time-indicator" style="background-color: rgba(16, 185, 129, 0.1); color: var(--accent-green); text-align: center; padding: 0.25rem; border-radius: 0.25rem; margin-bottom: 1rem; font-size: 0.8rem;">
+                🚀 Real-time Comet Tracking Active
+            </div>
             <div class="data-grid">
                 <span class="label">Distance from Earth:</span><span class="value" id="distance-earth">--</span>
                 <span class="label">Distance from Sun:</span><span class="value" id="distance-sun">--</span>
@@ -60,7 +63,6 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
         class Physics {
@@ -155,8 +157,7 @@
                 this.renderer.setPixelRatio(window.devicePixelRatio);
                 this.container.appendChild(this.renderer.domElement);
                 this.camera.position.set(0, 8, 15); // Zoomed out a bit
-                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
+                // Removed OrbitControls for now to fix loading issues
                 this.scene.add(new THREE.PointLight(0xffffff, 2.5, 500));
                 this.scene.add(new THREE.AmbientLight(0xffffff, 0.2));
                 this.bodies = {
@@ -192,7 +193,7 @@
                 this.trailLine = new THREE.Line(geometry, material);
                 this.scene.add(this.trailLine);
             }
-            render() { this.controls.update(); this.renderer.render(this.scene, this.camera); }
+            render() { this.renderer.render(this.scene, this.camera); }
         }
 
         class App {
@@ -206,7 +207,8 @@
                 this.planetNames = ['mercury', 'venus', 'earth', 'mars', 'jupiter'];
                 this.cometTrail = [];
                 this.TRAIL_LENGTH = 150;
-            }
+                
+
             init() {
                 this.ui.startClock();
                 this.bindTimeControls();

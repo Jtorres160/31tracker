@@ -3,28 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D - 3I/ATLAS Interstellar Comet Live Tracker</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>3I/ATLAS (C/2025 N1) Live Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="starfield" id="starfield"></div>
     <div id="scene-container"></div>
+    
     <div class="ui-overlay">
         <div class="info-panel">
-            <h1>3I/ATLAS (C/2025 N1)</h1>
-            <p class="subtitle">Interstellar Comet 3D Tracker</p>
-            <div class="time-display" id="current-time">--:--:-- --</div>
-            <div class="data-grid">
-                <span class="label">Distance from Earth:</span><span class="value" id="distance-earth">--</span>
-                <span class="label">Distance from Sun:</span><span class="value" id="distance-sun">--</span>
+            <h1>🌠 3I/ATLAS</h1>
+            <div class="subtitle">C/2025 N1 - Interstellar Visitor</div>
+            
+            <div class="time-display">
+                <div id="current-time">Loading...</div>
             </div>
+            
+            <div class="data-grid">
+                <span class="label">Distance from Sun:</span>
+                <span class="value" id="distance-sun">-- M km</span>
+                
+                <span class="label">Distance from Earth:</span>
+                <span class="value" id="distance-earth">-- M km</span>
+                
+                <span class="label">Velocity:</span>
+                <span class="value" id="velocity">-- km/s</span>
+            </div>
+            
             <div class="countdown-panel">
-                <h3>Countdown to Earth Pass</h3>
-                <div class="countdown-timer" id="countdown-timer">--</div>
+                <div class="countdown-label">Closest Approach to Earth</div>
+                <div class="countdown-timer" id="countdown-timer">Loading...</div>
+            </div>
+
+            <div class="instructions">
+                🖱️ Click and drag to rotate view<br>
+                🔍 Scroll to zoom
             </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script type="module" src="main.js"></script>
 </body>
 </html>
