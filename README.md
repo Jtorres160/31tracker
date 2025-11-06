@@ -96,12 +96,11 @@ git push origin main
 # Enable GitHub Pages in repository settings
 ```
 
-## 📱 **Usage**
+## **Usage**
 
 ### **Basic Controls**
 - **Zoom**: Mouse wheel or +/- buttons
 - **Pan**: Click and drag
-- **Focus**: Click "🎯" to center on comet
 - **Time Control**: Adjust simulation speed (1x to 1y/s)
 
 ### **Live Data Toggle**
@@ -114,7 +113,7 @@ git push origin main
 - **Constellations**: Toggle star pattern overlays
 - **Real-Time Mode**: Live astronomical updates
 
-## 🔬 **Scientific Accuracy**
+##  **Scientific Accuracy**
 
 This tracker is **scientifically accurate** and matches real astronomical data:
 
@@ -154,14 +153,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Astronomical Community**: For orbital element verification
 - **Open Source Community**: For tools and libraries used
 
-## 📞 **Contact**
 
-- **Project**: [GitHub Issues](https://github.com/your-username/31tracker/issues)
-- **Questions**: Open an issue or discussion
-- **Collaboration**: Pull requests welcome!
 
----
 
-**🌟 Track the interstellar visitor as it approaches Earth! 🌟**
-
-*Built with ❤️ for astronomy enthusiasts and space science education*
